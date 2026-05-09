@@ -10,16 +10,20 @@ const {
 } = require('discord.js');
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds]
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers
+  ]
 });
 
 client.once('ready', async () => {
   console.log(`Zalogowano jako ${client.user.tag}`);
 
-  const channel = await client.channels.fetch('1502636585437364295');
+  // KANAŁ WERYFIKACJI
+  const verifyChannel = await client.channels.fetch('1502636585437364295');
 
-  if (!channel) {
-    console.log('Nie znaleziono kanału.');
+  if (!verifyChannel) {
+    console.log('Nie znaleziono kanału weryfikacji.');
     return;
   }
 
@@ -39,12 +43,23 @@ client.once('ready', async () => {
       .setURL('https://vaultcord.win/stargirls')
   );
 
-  await channel.send({
+  await verifyChannel.send({
     embeds: [embed],
     components: [row]
   });
 
   console.log('Wysłano wiadomość weryfikacyjną.');
+});
+
+// PRZYWITANIE
+client.on('guildMemberAdd', async (member) => {
+  const welcomeChannel = member.guild.channels.cache.get('1502632839928086660');
+
+  if (!welcomeChannel) return;
+
+  welcomeChannel.send(
+    `💖 Witaj ${member} na serwerze **Star Girls**!\n🔐 Przejdź weryfikację i baw się dobrze!`
+  );
 });
 
 client.login(process.env.TOKEN);
