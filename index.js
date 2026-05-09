@@ -29,12 +29,16 @@ client.once('ready', async () => {
       return;
     }
 
-    // EMBED
-    const embed = new EmbedBuilder()
+    // EMBED WERYFIKACJI
+    const verifyEmbed = new EmbedBuilder()
       .setTitle('🔐 Weryfikacja')
-      .setDescription('Kliknij przycisk poniżej aby przejść weryfikację.')
+      .setDescription(
+        'Kliknij przycisk poniżej aby przejść weryfikację.'
+      )
       .setColor('#ff66cc')
-      .setFooter({ text: 'Star Girls Verification' })
+      .setFooter({
+        text: 'Star Girls Verification'
+      })
       .setTimestamp();
 
     // PRZYCISK
@@ -45,9 +49,9 @@ client.once('ready', async () => {
         .setURL('https://vaultcord.win/stargirls')
     );
 
-    // WYŚLIJ
+    // WYŚLIJ WIADOMOŚĆ
     await verifyChannel.send({
-      embeds: [embed],
+      embeds: [verifyEmbed],
       components: [row]
     });
 
@@ -65,9 +69,29 @@ client.on('guildMemberAdd', async (member) => {
 
     if (!welcomeChannel) return;
 
-    await welcomeChannel.send(
-      `💖 Witaj ${member} na serwerze **Star Girls**!\n🔐 Przejdź weryfikację i baw się dobrze!`
-    );
+    const welcomeEmbed = new EmbedBuilder()
+      .setColor('#ff66cc')
+      .setTitle('👋 Witaj na Star Girls!')
+      .setDescription(
+        `💖 ${member}, witamy na serwerze!\n\n` +
+        `🎉 Jesteś **${member.guild.memberCount}** osobą na serwerze!\n\n` +
+        `🔐 Przejdź weryfikację i baw się dobrze!\n\n` +
+        `✨ Życzymy miłego pobytu!`
+      )
+      .setThumbnail(
+        member.user.displayAvatarURL({ dynamic: true })
+      )
+      .setFooter({
+        text: `Star Girls • ${new Date().getFullYear()}`
+      })
+      .setTimestamp();
+
+    await welcomeChannel.send({
+      content: `${member}`,
+      embeds: [welcomeEmbed]
+    });
+
+    console.log('✅ Wysłano powitanie.');
 
   } catch (err) {
     console.error('❌ Błąd przy powitaniu:', err);
