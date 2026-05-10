@@ -6,15 +6,23 @@ const {
   EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonStyle
+  ButtonStyle,
+  ChannelType
 } = require('discord.js');
 
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
   ]
 });
+
+// ID KANAŁÓW
+const VERIFY_CHANNEL_ID = '1502636585437364295';
+const WELCOME_CHANNEL_ID = '1502632839928086660';
+const SUGGESTION_CHANNEL_ID = '1502632840070959119';
 
 // BOT ONLINE
 client.once('ready', async () => {
@@ -22,7 +30,7 @@ client.once('ready', async () => {
 
   try {
     // KANAŁ WERYFIKACJI
-    const verifyChannel = await client.channels.fetch('1502636585437364295');
+    const verifyChannel = await client.channels.fetch(VERIFY_CHANNEL_ID);
 
     if (!verifyChannel) {
       console.log('❌ Nie znaleziono kanału weryfikacji.');
@@ -65,7 +73,7 @@ client.once('ready', async () => {
 // PRZYWITANIE
 client.on('guildMemberAdd', async (member) => {
   try {
-    const welcomeChannel = member.guild.channels.cache.get('1502632839928086660');
+    const welcomeChannel = member.guild.channels.cache.get(WELCOME_CHANNEL_ID);
 
     if (!welcomeChannel) return;
 
@@ -95,6 +103,56 @@ client.on('guildMemberAdd', async (member) => {
 
   } catch (err) {
     console.error('❌ Błąd przy powitaniu:', err);
+  }
+});
+
+// SYSTEM PROPOZYCJI
+client.on('messageCreate', async (message) => {
+  try {
+    if (message.author.bot) return;
+
+    if (message.channel.id !== SUGGESTION_CHANNEL_ID) return;
+
+    const suggestionEmbed = new EmbedBuilder()
+      .setColor('#5865F2')
+      .setTitle('💧 Star Girls × PROPOZYCJA')
+      .setDescription(
+        `📦 **Opublikował:** ${message.author}\n` +
+        `📝 **Treść propozycji:** ${message.content}\n` +
+        `📆 **Data publikowania:** <t:${Math.floor(Date.now() / 1000)}:F>`
+      )
+      .setThumbnail(
+        message.author.displayAvatarURL({ dynamic: true })
+      )
+      .setFooter({
+        text: `© ${new Date().getFullYear()} Star Girls × Propozycja`
+      })
+      .setTimestamp();
+
+    // WYŚLIJ EMBED
+    const sentMessage = await message.channel.send({
+      embeds: [suggestionEmbed]
+    });
+
+    // REAKCJE
+    await sentMessage.react('👍');
+    await sentMessage.react('👎');
+    await sentMessage.react('🤍');
+
+    // THREAD
+    await sentMessage.startThread({
+      name: `Dyskusja • ${message.author.username}`,
+      autoArchiveDuration: 1440,
+      type: ChannelType.PublicThread
+    });
+
+    // USUŃ STARĄ WIADOMOŚĆ
+    await message.delete();
+
+    console.log('✅ Dodano propozycję.');
+
+  } catch (err) {
+    console.error('❌ Błąd propozycji:', err);
   }
 });
 
